@@ -8,10 +8,12 @@ import {
   Layers,
   ArrowRight,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  HelpCircle
 } from "lucide-react";
 import { ChangeDetectionResponse } from "../types";
 import { compareImages, getDemoSampleImage } from "../services/api";
+import { Tooltip } from "./Tooltip";
 
 export const ChangeDetectionPanel: React.FC = () => {
   const [prevImage, setPrevImage] = useState<string | null>(null);
@@ -221,7 +223,15 @@ export const ChangeDetectionPanel: React.FC = () => {
           <div className="rounded-xl border border-[#132742] bg-[#0a1526]/80 p-5 backdrop-blur">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1">
-                <span className="text-xs text-slate-400 font-medium">Evolution Trajectory</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-slate-400 font-medium">Evolution Trajectory</span>
+                  <Tooltip
+                    title="Evolution Trajectory"
+                    content="Analytical Estimate based on SAR features: Directional trend (expansion or contraction) evaluated from pixel matrix area differentials across temporal passes."
+                    position="top"
+                    size="sm"
+                  />
+                </div>
                 <div className="flex items-center gap-2">
                   <span
                     className={`rounded px-2.5 py-0.5 text-xs font-black uppercase ${
@@ -242,7 +252,15 @@ export const ChangeDetectionPanel: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs text-slate-400 font-medium">Area Delta</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-slate-400 font-medium">Area Delta</span>
+                  <Tooltip
+                    title="Area Delta"
+                    content="Analytical Estimate based on SAR features: Net difference in candidate damped pixels between T1 and T2 acquisitions."
+                    position="top"
+                    size="sm"
+                  />
+                </div>
                 <div className="font-mono text-lg font-bold text-cyan-400">
                   {result.change_metrics.area_difference_pixels > 0 ? "+" : ""}
                   {result.change_metrics.area_difference_pixels.toLocaleString()} px
@@ -251,7 +269,15 @@ export const ChangeDetectionPanel: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs text-slate-400 font-medium">Spatial Overlap (IoU)</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-slate-400 font-medium">Spatial Overlap (IoU)</span>
+                  <Tooltip
+                    title="Spatial Overlap (IoU)"
+                    content="Analytical Estimate based on SAR features: Intersection over Union score measuring geometric spatial persistence between satellite scene acquisitions."
+                    position="top"
+                    size="sm"
+                  />
+                </div>
                 <div className="font-mono text-lg font-bold text-purple-400">
                   {result.change_metrics.intersection_over_union}
                 </div>
@@ -261,7 +287,15 @@ export const ChangeDetectionPanel: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs text-slate-400 font-medium">Newly Expanded Zone</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-slate-400 font-medium">Newly Expanded Zone</span>
+                  <Tooltip
+                    title="Newly Expanded Zone"
+                    content="Analytical Estimate based on SAR features: Newly segmented dark anomaly pixels detected at T2 that were not present at T1."
+                    position="top"
+                    size="sm"
+                  />
+                </div>
                 <div className="font-mono text-lg font-bold text-rose-400">
                   +{result.change_metrics.newly_expanded_pixels.toLocaleString()} px
                 </div>

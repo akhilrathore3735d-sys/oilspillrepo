@@ -8,9 +8,11 @@ import {
   ZoomOut,
   Layers,
   Info,
-  ShieldAlert
+  ShieldAlert,
+  HelpCircle
 } from "lucide-react";
 import { AnalysisResponse } from "../types";
+import { Tooltip } from "./Tooltip";
 
 interface SpillMapViewerProps {
   analysis: AnalysisResponse;
@@ -36,11 +38,19 @@ export const SpillMapViewer: React.FC<SpillMapViewerProps> = ({ analysis }) => {
           </p>
         </div>
 
-        {/* Scientific Disclaimer Badge */}
-        <div className="rounded-lg border border-amber-800/60 bg-amber-950/40 px-3 py-1.5 text-[11px] text-amber-300 flex items-center gap-1.5">
-          <Info className="h-4 w-4 shrink-0 text-amber-400" />
-          <span>Image-Space Radar Coordinates • Ungeoreferenced Raster</span>
-        </div>
+        {/* Scientific Disclaimer Badge with Tooltip */}
+        <Tooltip
+          title="Viewport Spatial Telemetry"
+          content="Analytical Estimate based on SAR features: Coordinates and reticles are calculated in 2D image matrix space (slant/ground range projection). In-situ spatial geolocation requires coupling with satellite orbital ephemeris state vectors."
+          position="bottom"
+          size="lg"
+        >
+          <div className="rounded-lg border border-amber-800/60 bg-amber-950/40 px-3 py-1.5 text-[11px] text-amber-300 flex items-center gap-1.5 hover:bg-amber-950/60 transition cursor-help">
+            <Info className="h-4 w-4 shrink-0 text-amber-400" />
+            <span>Analytical Estimates based on SAR features</span>
+            <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
+          </div>
+        </Tooltip>
       </div>
 
       {/* Map Display Card */}

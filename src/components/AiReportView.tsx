@@ -7,9 +7,11 @@ import {
   Download,
   Printer,
   Sparkles,
-  Info
+  Info,
+  HelpCircle
 } from "lucide-react";
 import { AnalysisResponse } from "../types";
+import { Tooltip } from "./Tooltip";
 
 interface AiReportViewProps {
   analysis: AnalysisResponse;
@@ -91,9 +93,17 @@ export const AiReportView: React.FC<AiReportViewProps> = ({ analysis }) => {
       {/* Report Telemetry Badges */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
-          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Risk Tier</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Risk Tier</span>
+            <Tooltip
+              title="Risk Tier"
+              content="Analytical Estimate based on SAR features: Multi-criteria hazard classification derived from slick area, damping contrast, and weathering metrics."
+              position="top"
+              size="sm"
+            />
+          </div>
           <span
-            className={`text-sm font-bold uppercase ${
+            className={`text-sm font-bold uppercase mt-0.5 block ${
               risk.level === "CRITICAL"
                 ? "text-rose-400"
                 : risk.level === "HIGH"
@@ -108,22 +118,46 @@ export const AiReportView: React.FC<AiReportViewProps> = ({ analysis }) => {
         </div>
 
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
-          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Detection Confidence</span>
-          <span className="text-sm font-bold font-mono text-cyan-400">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Detection Confidence</span>
+            <Tooltip
+              title="Detection Confidence"
+              content="Analytical Estimate based on SAR features: Statistical likelihood that segmented dark anomaly represents an oceanic surface slick rather than radar look-alikes."
+              position="top"
+              size="sm"
+            />
+          </div>
+          <span className="text-sm font-bold font-mono text-cyan-400 mt-0.5 block">
             {Math.round(detection.confidence * 100)}% Confidence
           </span>
         </div>
 
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
-          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Candidate Footprint</span>
-          <span className="text-sm font-bold font-mono text-white">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Candidate Footprint</span>
+            <Tooltip
+              title="Candidate Footprint"
+              content="Analytical Estimate based on SAR features: Total contiguous pixel area identified below threshold damping; physical spatial extent subject to local orbital resolution."
+              position="top"
+              size="sm"
+            />
+          </div>
+          <span className="text-sm font-bold font-mono text-white mt-0.5 block">
             {geometry.pixel_area.toLocaleString()} px
           </span>
         </div>
 
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
-          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Synthesis Mode</span>
-          <span className="text-sm font-bold text-emerald-400 flex items-center gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Synthesis Mode</span>
+            <Tooltip
+              title="Synthesis Mode"
+              content="Analytical synthesis produced by rule-based algorithmic analysis and Gemini 2.5 Flash operational briefing generator."
+              position="top"
+              size="sm"
+            />
+          </div>
+          <span className="text-sm font-bold text-emerald-400 flex items-center gap-1 mt-0.5">
             <Sparkles className="h-3.5 w-3.5" />
             <span>AI / Rule-Based</span>
           </span>

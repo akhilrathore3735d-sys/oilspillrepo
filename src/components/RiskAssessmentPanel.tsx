@@ -7,9 +7,11 @@ import {
   Scale,
   Compass,
   ArrowRight,
-  HelpCircle
+  HelpCircle,
+  Info
 } from "lucide-react";
 import { RiskAnalysis } from "../types";
+import { Tooltip } from "./Tooltip";
 
 interface RiskAssessmentPanelProps {
   risk: RiskAnalysis;
@@ -65,9 +67,17 @@ export const RiskAssessmentPanel: React.FC<RiskAssessmentPanelProps> = ({ risk }
       >
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Explainable Operational Threat Tier
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Operational Threat Tier
+              </span>
+              <Tooltip
+                title="Risk Tier Estimate"
+                content="Analytical Estimate based on SAR features: Multi-criteria heuristic scoring aggregating candidate footprint size, backscatter contrast damping, and dispersion metrics. Not an absolute environmental toxicological assessment."
+                position="top"
+                size="md"
+              />
+            </div>
             <div className="flex items-center gap-3">
               <span className={`rounded-lg border px-3 py-1 text-2xl font-black uppercase ${theme.badge}`}>
                 {level} RISK
@@ -80,9 +90,17 @@ export const RiskAssessmentPanel: React.FC<RiskAssessmentPanelProps> = ({ risk }
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 min-w-[240px]">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-              Composite Hazard Scale
-            </span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Composite Hazard Scale
+              </span>
+              <Tooltip
+                title="Hazard Scale"
+                content="Analytical Estimate based on SAR features: Weighted composite index normalized from 0.0 (baseline) to 1.0 (severe hazard)."
+                position="top"
+                size="sm"
+              />
+            </div>
             <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
               <div
                 className={`h-full ${theme.bar} transition-all duration-500`}
@@ -101,15 +119,31 @@ export const RiskAssessmentPanel: React.FC<RiskAssessmentPanelProps> = ({ risk }
 
       {/* Factor Contribution Breakdown */}
       <div className="rounded-xl border border-[#132742] bg-[#0a1526]/80 p-5 backdrop-blur">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Scale className="h-4 w-4 text-cyan-400" />
-          <span>Constituent Risk Factors Breakdown</span>
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <Scale className="h-4 w-4 text-cyan-400" />
+            <span>Constituent Risk Factors Breakdown</span>
+          </h3>
+          <Tooltip
+            title="Risk Factor Estimation"
+            content="Analytical Estimate based on SAR features: Factor weightings represent model inputs from radar amplitude thresholding, not chemical toxicity measurements."
+            position="left"
+            size="md"
+          />
+        </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {factors.map((item, idx) => (
             <div key={idx} className="rounded-lg border border-[#132742] bg-[#060e1c]/60 p-3.5 space-y-1">
-              <span className="text-xs font-semibold text-slate-300">{item.factor}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-300">{item.factor}</span>
+                <Tooltip
+                  title={item.factor}
+                  content={`Analytical Estimate based on SAR features: Factor contribution calculated from segmented image telemetry (${item.factor.toLowerCase()}).`}
+                  position="top"
+                  size="sm"
+                />
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold font-mono text-cyan-400">{item.contribution}</span>
                 {item.contribution === "Unavailable" && (

@@ -9,6 +9,7 @@ import {
   Info
 } from "lucide-react";
 import { WeatheringAnalysis } from "../types";
+import { Tooltip } from "./Tooltip";
 
 interface WeatheringPanelProps {
   weathering: WeatheringAnalysis;
@@ -62,10 +63,18 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
           </p>
         </div>
 
-        <div className="rounded-lg border border-purple-800/60 bg-purple-950/40 px-3 py-1.5 text-[11px] text-purple-300 flex items-center gap-2">
-          <Info className="h-4 w-4 shrink-0 text-purple-400" />
-          <span>Analytical Estimate • Not Chronological Age</span>
-        </div>
+        <Tooltip
+          title="Weathering Estimate Clarification"
+          content="All weathering indices and dispersion scores are Analytical Estimates based on SAR features (boundary gradient diffuseness, spatial fragmentation, and backscatter variance). They reflect relative physical dispersion rather than chronological elapsed time or laboratory chemical weathering."
+          position="bottom"
+          size="lg"
+        >
+          <div className="rounded-lg border border-purple-800/60 bg-purple-950/40 px-3 py-1.5 text-[11px] text-purple-300 flex items-center gap-2 hover:bg-purple-950/60 transition cursor-help">
+            <Info className="h-4 w-4 shrink-0 text-purple-400" />
+            <span>Analytical Estimates based on SAR features</span>
+            <HelpCircle className="h-3.5 w-3.5 text-purple-400" />
+          </div>
+        </Tooltip>
       </div>
 
       {/* Primary Weathering Status Card */}
@@ -73,9 +82,17 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Main Indicator Badge & Score */}
           <div className="space-y-2 border-b border-[#132742] pb-4 md:border-b-0 md:border-r md:pr-6">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Estimated Weathering Indicator
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Estimated Weathering Indicator
+              </span>
+              <Tooltip
+                title="Weathering Stage Indicator"
+                content="Analytical Estimate based on SAR features: Categorized into LOW (cohesive), MODERATE (transitional sheen), or HIGH (dispersed ribbons) derived from 2D spatial texture and perimeter decay."
+                position="top"
+                size="md"
+              />
+            </div>
             <div className="flex items-center gap-3">
               <span
                 className={`rounded-lg border px-3 py-1 text-xl font-black uppercase tracking-wider ${style.badge}`}
@@ -91,9 +108,17 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
 
           {/* Dispersion Progress Gauge */}
           <div className="space-y-2 border-b border-[#132742] pb-4 md:border-b-0 md:border-r md:pr-6">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Physical Dispersion Index
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Physical Dispersion Index
+              </span>
+              <Tooltip
+                title="Physical Dispersion Index"
+                content="Analytical Estimate based on SAR features: Mathematical index (0.0 to 1.0) combining edge diffuseness, fragmentation, and compactness. Not an in-situ viscosity or distillation measurement."
+                position="top"
+                size="md"
+              />
+            </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-[#060e1c]">
               <div
                 className={`h-full ${style.bar} transition-all duration-500`}
@@ -126,14 +151,30 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
 
       {/* Underlying Physical Sub-Metrics */}
       <div className="rounded-xl border border-[#132742] bg-[#0a1526]/80 p-5 backdrop-blur">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-          <BarChart2 className="h-4 w-4 text-cyan-400" />
-          <span>Image-Derived Physical Features Breakdown</span>
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <BarChart2 className="h-4 w-4 text-cyan-400" />
+            <span>Image-Derived Physical Features Breakdown</span>
+          </h3>
+          <Tooltip
+            title="Sub-Metric Feature Clarification"
+            content="Analytical Estimate based on SAR features: Sub-metrics are extracted from 2D pixel statistics and spatial gradient filters, not chemical sampling."
+            position="left"
+            size="md"
+          />
+        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg border border-[#132742] bg-[#060e1c]/60 p-3.5 space-y-1">
-            <span className="text-[11px] text-slate-400 font-medium">Spatial Fragmentation Index</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">Spatial Fragmentation</span>
+              <Tooltip
+                title="Spatial Fragmentation Index"
+                content="Analytical Estimate based on SAR features: Evaluates breakdown of single cohesive slick into detached patches or sheen streamers."
+                position="top"
+                size="sm"
+              />
+            </div>
             <div className="text-lg font-bold font-mono text-cyan-400">
               {sub_metrics.fragmentation_index} <span className="text-xs text-slate-500">/ 1.0</span>
             </div>
@@ -143,7 +184,15 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
           </div>
 
           <div className="rounded-lg border border-[#132742] bg-[#060e1c]/60 p-3.5 space-y-1">
-            <span className="text-[11px] text-slate-400 font-medium">Boundary Edge Diffuseness</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">Boundary Edge Diffuseness</span>
+              <Tooltip
+                title="Boundary Edge Diffuseness"
+                content="Analytical Estimate based on SAR features: 2D Sobel gradient transition across the perimeter. Weathered sheens produce diffuse, gradual transition boundaries."
+                position="top"
+                size="sm"
+              />
+            </div>
             <div className="text-lg font-bold font-mono text-purple-400">
               {sub_metrics.edge_diffuseness} <span className="text-xs text-slate-500">/ 1.0</span>
             </div>
@@ -153,7 +202,15 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
           </div>
 
           <div className="rounded-lg border border-[#132742] bg-[#060e1c]/60 p-3.5 space-y-1">
-            <span className="text-[11px] text-slate-400 font-medium">Internal Heterogeneity</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">Internal Heterogeneity</span>
+              <Tooltip
+                title="Internal Heterogeneity"
+                content="Analytical Estimate based on SAR features: Normalized coefficient of variation (σ/μ) of backscatter intensity within the oil patch mask."
+                position="top"
+                size="sm"
+              />
+            </div>
             <div className="text-lg font-bold font-mono text-amber-400">
               {sub_metrics.internal_heterogeneity} <span className="text-xs text-slate-500">/ 1.0</span>
             </div>
@@ -163,7 +220,15 @@ export const WeatheringPanel: React.FC<WeatheringPanelProps> = ({ weathering }) 
           </div>
 
           <div className="rounded-lg border border-[#132742] bg-[#060e1c]/60 p-3.5 space-y-1">
-            <span className="text-[11px] text-slate-400 font-medium">Internal Standard Deviation</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">Internal Standard Deviation</span>
+              <Tooltip
+                title="Internal Standard Deviation"
+                content="Analytical Estimate based on SAR features: Raw pixel variance in digital numbers reflecting texture and wave interaction across the oil film."
+                position="top"
+                size="sm"
+              />
+            </div>
             <div className="text-lg font-bold font-mono text-emerald-400">
               {sub_metrics.internal_std_intensity} <span className="text-xs text-slate-500">DN</span>
             </div>

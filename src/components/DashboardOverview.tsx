@@ -8,9 +8,11 @@ import {
   Clock,
   ArrowRight,
   Info,
-  Cpu
+  Cpu,
+  HelpCircle
 } from "lucide-react";
 import { AnalysisResponse } from "../types";
+import { Tooltip } from "./Tooltip";
 
 interface DashboardOverviewProps {
   currentAnalysis: AnalysisResponse | null;
@@ -141,7 +143,15 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         {/* Metric 2 */}
         <div className="rounded-xl border border-[#132742] bg-[#0a1526]/80 p-5 backdrop-blur shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Total Evaluated Footprint</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium text-slate-400">Total Evaluated Footprint</span>
+              <Tooltip
+                title="Evaluated Footprint"
+                content="Analytical Estimate based on SAR features: Cumulative dark-spot pixel area evaluated across benchmark and analyzed scenes (calibrated at nominal 10m GSD); not an in-situ volumetric survey."
+                position="top"
+                size="sm"
+              />
+            </div>
             <div className="rounded-lg bg-cyan-950/60 p-2 text-cyan-400 border border-cyan-800/40">
               <Layers className="h-5 w-5" />
             </div>
@@ -207,9 +217,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   Risk: {currentAnalysis.risk.level} ({currentAnalysis.risk.score})
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-white">
-                Candidate Anomaly: {currentAnalysis.geometry.pixel_area.toLocaleString()} px ({currentAnalysis.geometry.area_percentage}% of scene)
-              </h3>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-lg font-bold text-white">
+                  Candidate Anomaly: {currentAnalysis.geometry.pixel_area.toLocaleString()} px ({currentAnalysis.geometry.area_percentage}% of scene)
+                </h3>
+                <Tooltip
+                  title="Candidate Footprint Estimate"
+                  content="Analytical Estimate based on SAR features: Segmented low-backscatter area in image space. In-situ slick boundaries and oil thickness are not directly measured by satellite radar amplitude alone."
+                  position="top"
+                  size="md"
+                />
+              </div>
               <p className="text-xs text-slate-300 max-w-2xl">
                 {currentAnalysis.risk.summary}
               </p>
