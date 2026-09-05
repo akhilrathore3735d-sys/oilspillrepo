@@ -6,7 +6,7 @@ Endpoints for image analysis, multi-temporal change detection, health checks, an
 import base64
 import cv2
 import numpy as np
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from fastapi import APIRouter, File, UploadFile, HTTPException, Form, Request
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 
@@ -20,6 +20,7 @@ class AnalyzeBase64Request(BaseModel):
     image_data: str
     previous_mask_data: Optional[str] = None
     spatial_resolution_m: Optional[float] = 10.0
+    generate_ai_report: Optional[bool] = True
 
 
 class ChangeDetectionRequest(BaseModel):
@@ -48,10 +49,7 @@ def health_check():
 
 
 @router.post("/analyze")
-async def analyze_image_endpoint(
-    file: Optional[UploadFile] = File(None),
-    payload: Optional[AnalyzeBase64Request] = None
-):
+async def analyze_image_endpoint(request: Request):
     """
     Primary satellite SAR image analysis endpoint.
     Accepts either multipart form-data file upload or JSON payload with base64 encoded image.
@@ -59,25 +57,46 @@ async def analyze_image_endpoint(
     try:
         image_bytes = None
         spatial_res = 10.0
+        content_type = request.headers.get("content-type", "")
 
-        if file is not None:
-            image_bytes = await file.read()
-        elif payload is not None and payload.image_data:
-            data = payload.image_data
-            if "," in data:
-                data = data.split(",")[1]
-            image_bytes = base64.b64decode(data)
-            if payload.spatial_resolution_m:
-                spatial_res = payload.spatial_resolution_m
+        if "multipart/form-data" in content_type:
+            form = await request.form()
+            uploaded_file = form.get("file")
+            if uploaded_file and hasattr(uploaded_file, "read"):
+                image_bytes = await uploaded_file.read()
+            elif "image_data" in form:
+                raw_data = str(form.get("image_data"))
+                if "," in raw_data:
+                    raw_data = raw_data.split(",")[1]
+                image_bytes = base64.b64decode(raw_data)
+            
+            if "spatial_resolution_m" in form:
+                try:
+                    spatial_res = float(str(form.get("spatial_resolution_m")))
+                except (ValueError, TypeError):
+                    spatial_res = 10.0
         else:
-            raise HTTPException(status_code=400, detail="No image provided. Provide 'file' or 'image_data'.")
+            # Parse application/json
+            body = await request.json()
+            raw_data = body.get("image_data", "")
+            if raw_data:
+                if "," in raw_data:
+                    raw_data = raw_data.split(",")[1]
+                image_bytes = base64.b64decode(raw_data)
+            if "spatial_resolution_m" in body:
+                try:
+                    spatial_res = float(body.get("spatial_resolution_m", 10.0))
+                except (ValueError, TypeError):
+                    spatial_res = 10.0
 
-        if len(image_bytes) == 0:
-            raise HTTPException(status_code=400, detail="Empty image payload received.")
+        if not image_bytes or len(image_bytes) == 0:
+            raise HTTPException(status_code=400, detail="No image provided. Provide 'file' or 'image_data'.")
 
         result = run_pipeline(image_bytes=image_bytes, spatial_resolution_m=spatial_res)
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis pipeline error: {str(e)}")
 
@@ -145,19 +164,22 @@ def get_demo_samples():
             "id": "medium_slick",
             "title": "Sentinel-1 SAR - Cohesive Crude Slick",
             "description": "Distinct elongated dark patch anomaly with high capillary wave suppression.",
-            "scenario": "medium_slick"
+            "scenario": "medium_slick",
+            "sensor": "Sentinel-1 C-band SAR (VV)"
         },
         {
             "id": "weathered",
             "title": "Sentinel-1 SAR - Weathered/Fragmented Sheen",
             "description": "Multi-ribbon emulsified slick showing higher spatial dispersion and diffuse edges.",
-            "scenario": "weathered"
+            "scenario": "weathered",
+            "sensor": "Sentinel-1 C-band SAR (VV)"
         },
         {
             "id": "clean_ocean",
             "title": "Sentinel-1 SAR - Nominal Sea Surface",
             "description": "Uniform sea clutter backscatter without anomalous capillary damping signatures.",
-            "scenario": "clean_ocean"
+            "scenario": "clean_ocean",
+            "sensor": "Sentinel-1 C-band SAR (VV)"
         }
     ]
 
