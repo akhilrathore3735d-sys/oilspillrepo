@@ -1,0 +1,6 @@
+{
+  "name": "OILWATCH",
+  "description": "Satellite-Based Oil Spill Intelligence & Monitoring Platform for Sentinel-1 SAR imagery",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

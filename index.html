@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OILWATCH - Satellite Oil Spill Intelligence</title>
+    <meta name="description" content="Satellite-Based Oil Spill Intelligence & Monitoring Platform for Sentinel-1 SAR imagery" />
+    <meta property="og:title" content="OILWATCH - Satellite Oil Spill Intelligence" />
+    <meta property="og:description" content="Satellite-Based Oil Spill Intelligence & Monitoring Platform for Sentinel-1 SAR imagery" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (function() {
+        // Prevent Vite HMR WebSocket connection errors and unhandled rejections in cloud proxy / sandboxed preview
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event.reason;
+          var msg = (typeof reason === 'string' ? reason : (reason && reason.message) || '') + '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        window.addEventListener('error', function(event) {
+          var msg = (event.message || '') + '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        var origConsoleError = console.error;
+        console.error = function() {
+          var firstArg = arguments[0];
+          if (typeof firstArg === 'string' && firstArg.indexOf('[vite] failed to connect to websocket') !== -1) {
+            return;
+          }
+          return origConsoleError.apply(console, arguments);
+        };
+
+        var NativeWebSocket = window.WebSocket;
+        if (NativeWebSocket) {
+          var PatchedWebSocket = function(url, protocols) {
+            var isHmr = false;
+            if (typeof protocols === 'string' && protocols === 'vite-hmr') {
+              isHmr = true;
+            } else if (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1) {
+              isHmr = true;
+            } else if (typeof url === 'string' && (url.indexOf('vite-hmr') !== -1 || url.indexOf('token=') !== -1 || url.indexOf(':24678') !== -1)) {
+              isHmr = true;
+            }
+
+            if (isHmr) {
+              var target = new EventTarget();
+              target.readyState = 1; // OPEN
+              target.url = url;
+              target.protocol = 'vite-hmr';
+              target.extensions = '';
+              target.bufferedAmount = 0;
+              target.binaryType = 'blob';
+              target.send = function() {};
+              target.close = function() {
+                target.readyState = 3; // CLOSED
+              };
+              setTimeout(function() {
+                target.dispatchEvent(new Event('open'));
+              }, 10);
+              return target;
+            }
+
+            return new NativeWebSocket(url, protocols);
+          };
+
+          PatchedWebSocket.prototype = NativeWebSocket.prototype;
+          PatchedWebSocket.CONNECTING = 0;
+          PatchedWebSocket.OPEN = 1;
+          PatchedWebSocket.CLOSING = 2;
+          PatchedWebSocket.CLOSED = 3;
+          window.WebSocket = PatchedWebSocket;
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
