@@ -1,6 +1,6 @@
 /**
  * OILWATCH - Satellite-Based Oil Spill Intelligence & Monitoring Platform
- * Autonomous Satellite SAR Remote Sensing & Hazard Assessment
+ * Satellite SAR Remote Sensing & Hazard Assessment
  */
 
 import React, { useState, useEffect } from "react";
@@ -14,9 +14,10 @@ import { ChangeDetectionPanel } from "./components/ChangeDetectionPanel";
 import { SpillMapViewer } from "./components/SpillMapViewer";
 import { AiReportView } from "./components/AiReportView";
 import { DemoModeModal } from "./components/DemoModeModal";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AnalysisResponse, DemoSample } from "./types";
 import { checkHealth, getDemoSamples, getDemoSampleImage, analyzeImage } from "./services/api";
-import { AlertTriangle, Radio, Sparkles, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, Radio, Sparkles } from "lucide-react";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
@@ -27,27 +28,39 @@ export default function App() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
-  // Initialize health and demo samples
+  // Initialize health and demo samples with periodic liveness check
   useEffect(() => {
-    async function initPlatform() {
+    let isMounted = true;
+
+    async function pollHealth() {
       try {
         const health = await checkHealth();
-        if (health.status === "healthy") {
-          setIsBackendHealthy(true);
+        if (isMounted) {
+          setIsBackendHealthy(health.status === "healthy");
         }
       } catch (err) {
-        console.warn("Backend health check warning:", err);
+        if (isMounted) setIsBackendHealthy(false);
       }
+    }
 
+    async function initPlatform() {
+      await pollHealth();
       try {
         const samples = await getDemoSamples();
-        setDemoSamples(samples);
+        if (isMounted) setDemoSamples(samples);
       } catch (err) {
-        console.warn("Demo samples fetch warning:", err);
+        console.warn("Demo samples fetch notice:", err);
       }
     }
 
     initPlatform();
+
+    // Check pipeline health periodically
+    const intervalId = setInterval(pollHealth, 15000);
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   // Show transient toast notification
@@ -55,14 +68,14 @@ export default function App() {
     setNotification(msg);
     setTimeout(() => {
       setNotification(null);
-    }, 4000);
+    }, 4500);
   };
 
-  // Run a demo scenario end-to-end
+  // Run a demo scenario end-to-end with full error guarding
   const handleLaunchScenario = async (scenario: string) => {
     try {
       setIsAnalyzingDemo(true);
-      showToast(`Ingesting Sentinel-1 SAR acquisition: ${scenario}...`);
+      showToast(`Loading Sentinel-1 SAR acquisition: ${scenario}...`);
       const data = await getDemoSampleImage(scenario);
 
       showToast("Executing multi-stage processing pipeline...");
@@ -70,9 +83,10 @@ export default function App() {
 
       setAnalysisResult(result);
       setActiveTab("results");
-      showToast(`Analysis completed successfully! Detected risk: ${result.risk.level}`);
+      showToast(`Analysis completed successfully! Assessed risk tier: ${result.risk.level}`);
     } catch (err: any) {
-      showToast(`Error running scenario: ${err.message}`);
+      console.error("Scenario execution failure:", err);
+      showToast(`Notice: ${err?.message || "Failed to complete SAR scenario analysis"}`);
     } finally {
       setIsAnalyzingDemo(false);
     }
@@ -91,110 +105,116 @@ export default function App() {
 
       {/* Toast Notification Banner */}
       {notification && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-[#0c1a2f]/95 px-4 py-3 text-xs font-medium text-cyan-300 shadow-2xl backdrop-blur-md transition-all animate-bounce">
-          <Sparkles className="h-4 w-4 text-cyan-400" />
+        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-[#0c1a2f]/95 px-4 py-3 text-xs font-medium text-cyan-300 shadow-2xl backdrop-blur-md transition-all">
+          <Sparkles className="h-4 w-4 text-cyan-400 shrink-0" />
           <span>{notification}</span>
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area guarded by ErrorBoundary */}
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {/* Tab 1: Dashboard Overview */}
-        {activeTab === "dashboard" && (
-          <DashboardOverview
-            currentAnalysis={analysisResult}
-            onNavigateToAnalyze={() => setActiveTab("analyze")}
-            onOpenDemo={() => setIsDemoModalOpen(true)}
-            onViewResults={() => setActiveTab("results")}
-          />
-        )}
+        <ErrorBoundary
+          fallbackTitle="View Rendering Interrupted"
+          fallbackMessage="An unexpected issue occurred while rendering this view. You can return to the dashboard or try again."
+          onReset={() => setActiveTab("dashboard")}
+        >
+          {/* Tab 1: Dashboard Overview */}
+          {activeTab === "dashboard" && (
+            <DashboardOverview
+              currentAnalysis={analysisResult}
+              onNavigateToAnalyze={() => setActiveTab("analyze")}
+              onOpenDemo={() => setIsDemoModalOpen(true)}
+              onViewResults={() => setActiveTab("results")}
+            />
+          )}
 
-        {/* Tab 2: Analyze SAR Image */}
-        {activeTab === "analyze" && (
-          <ImageAnalyzer
-            onAnalysisComplete={(res) => {
-              setAnalysisResult(res);
-              showToast("SAR analysis complete! Switching to results telemetry...");
-              setActiveTab("results");
-            }}
-            demoSamples={demoSamples}
-          />
-        )}
+          {/* Tab 2: Analyze SAR Image */}
+          {activeTab === "analyze" && (
+            <ImageAnalyzer
+              onAnalysisComplete={(res) => {
+                setAnalysisResult(res);
+                showToast("SAR analysis complete! Switching to results telemetry...");
+                setActiveTab("results");
+              }}
+              demoSamples={demoSamples}
+            />
+          )}
 
-        {/* Tab 3: Detailed Geometric Results */}
-        {activeTab === "results" && (
-          analysisResult ? (
-            <div className="space-y-8">
-              <GeometryMetrics analysis={analysisResult} />
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <WeatheringPanel weathering={analysisResult.weathering} />
-                <RiskAssessmentPanel risk={analysisResult.risk} />
+          {/* Tab 3: Detailed Geometric Results */}
+          {activeTab === "results" && (
+            analysisResult ? (
+              <div className="space-y-8">
+                <GeometryMetrics analysis={analysisResult} />
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <WeatheringPanel weathering={analysisResult.weathering} />
+                  <RiskAssessmentPanel risk={analysisResult.risk} />
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
-              <Radio className="h-12 w-12 text-slate-500 mb-3" />
-              <h3 className="text-base font-bold text-white">No Active Analysis Scene</h3>
-              <p className="text-xs text-slate-400 max-w-sm mt-1">
-                Upload a Sentinel-1 SAR image or launch a benchmark scenario to inspect full telemetry.
-              </p>
-              <button
-                onClick={() => setActiveTab("analyze")}
-                className="mt-4 rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
-              >
-                Go to SAR Ingestion
-              </button>
-            </div>
-          )
-        )}
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
+                <Radio className="h-12 w-12 text-slate-500 mb-3" />
+                <h3 className="text-base font-bold text-white">No Active Analysis Scene</h3>
+                <p className="text-xs text-slate-400 max-w-sm mt-1">
+                  Upload a Sentinel-1 SAR image or launch a benchmark scenario to inspect full telemetry.
+                </p>
+                <button
+                  onClick={() => setActiveTab("analyze")}
+                  className="mt-4 rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
+                >
+                  Go to SAR Ingestion
+                </button>
+              </div>
+            )
+          )}
 
-        {/* Tab 4: Geospatial / Spill Map */}
-        {activeTab === "map" && (
-          analysisResult ? (
-            <SpillMapViewer analysis={analysisResult} />
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
-              <Radio className="h-12 w-12 text-slate-500 mb-3" />
-              <h3 className="text-base font-bold text-white">No Target Mapped</h3>
-              <p className="text-xs text-slate-400 max-w-sm mt-1">
-                Run an analysis first to visualize radar range grid and centroid targeting reticles.
-              </p>
-            </div>
-          )
-        )}
+          {/* Tab 4: Geospatial / Spill Map */}
+          {activeTab === "map" && (
+            analysisResult ? (
+              <SpillMapViewer analysis={analysisResult} />
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
+                <Radio className="h-12 w-12 text-slate-500 mb-3" />
+                <h3 className="text-base font-bold text-white">No Target Mapped</h3>
+                <p className="text-xs text-slate-400 max-w-sm mt-1">
+                  Run an analysis first to visualize radar range grid and centroid targeting reticles.
+                </p>
+              </div>
+            )
+          )}
 
-        {/* Tab 5: Ageing / Weathering */}
-        {activeTab === "weathering" && (
-          analysisResult ? (
-            <WeatheringPanel weathering={analysisResult.weathering} />
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
-              <Radio className="h-12 w-12 text-slate-500 mb-3" />
-              <h3 className="text-base font-bold text-white">No Weathering Telemetry</h3>
-              <p className="text-xs text-slate-400 max-w-sm mt-1">
-                Run an analysis to measure physical dispersion and boundary gradient degradation.
-              </p>
-            </div>
-          )
-        )}
+          {/* Tab 5: Ageing / Weathering */}
+          {activeTab === "weathering" && (
+            analysisResult ? (
+              <WeatheringPanel weathering={analysisResult.weathering} />
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
+                <Radio className="h-12 w-12 text-slate-500 mb-3" />
+                <h3 className="text-base font-bold text-white">No Weathering Telemetry</h3>
+                <p className="text-xs text-slate-400 max-w-sm mt-1">
+                  Run an analysis to measure physical dispersion and boundary gradient degradation.
+                </p>
+              </div>
+            )
+          )}
 
-        {/* Tab 6: Change Detection */}
-        {activeTab === "change" && <ChangeDetectionPanel />}
+          {/* Tab 6: Change Detection */}
+          {activeTab === "change" && <ChangeDetectionPanel />}
 
-        {/* Tab 7: AI Intelligence Report */}
-        {activeTab === "report" && (
-          analysisResult ? (
-            <AiReportView analysis={analysisResult} />
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
-              <Radio className="h-12 w-12 text-slate-500 mb-3" />
-              <h3 className="text-base font-bold text-white">No Mission Briefing Generated</h3>
-              <p className="text-xs text-slate-400 max-w-sm mt-1">
-                Analyze a satellite scene to synthesize the executive AI report.
-              </p>
-            </div>
-          )
-        )}
+          {/* Tab 7: AI Intelligence Report */}
+          {activeTab === "report" && (
+            analysisResult ? (
+              <AiReportView analysis={analysisResult} />
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-[#132742] bg-[#0a1526]/70 p-12 text-center">
+                <Radio className="h-12 w-12 text-slate-500 mb-3" />
+                <h3 className="text-base font-bold text-white">No Technical Briefing Generated</h3>
+                <p className="text-xs text-slate-400 max-w-sm mt-1">
+                  Analyze a satellite scene to synthesize the technical report.
+                </p>
+              </div>
+            )
+          )}
+        </ErrorBoundary>
       </main>
 
       {/* Demo Mode Modal */}

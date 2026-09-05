@@ -38,7 +38,7 @@ export const DemoModeModal: React.FC<DemoModeModalProps> = ({
           <div>
             <h3 className="text-lg font-bold text-white">OILWATCH Interactive Demo Hub</h3>
             <p className="text-xs text-slate-400">
-              One-click autonomous pipeline execution on benchmark SAR acquisition scenarios.
+              One-click automated pipeline execution on benchmark SAR acquisition scenarios.
             </p>
           </div>
         </div>

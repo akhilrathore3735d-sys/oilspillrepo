@@ -7,8 +7,6 @@ import {
   Download,
   Printer,
   Sparkles,
-  ShieldCheck,
-  AlertTriangle,
   Info
 } from "lucide-react";
 import { AnalysisResponse } from "../types";
@@ -31,7 +29,7 @@ export const AiReportView: React.FC<AiReportViewProps> = ({ analysis }) => {
     const element = document.createElement("a");
     const file = new Blob([report], { type: "text/markdown" });
     element.href = URL.createObjectURL(file);
-    element.download = `OILWATCH_Intelligence_Report_${new Date().toISOString().slice(0, 10)}.md`;
+    element.download = `OILWATCH_Analysis_Briefing_${new Date().toISOString().slice(0, 10)}.md`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -49,15 +47,15 @@ export const AiReportView: React.FC<AiReportViewProps> = ({ analysis }) => {
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-cyan-400" />
             <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
-              Autonomous Intelligence Assessment
+              Remote Sensing Analysis & Synthesis
             </span>
           </div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2 mt-0.5">
             <FileText className="h-5 w-5 text-cyan-400" />
-            <span>Executive Sentinel-1 SAR Mission Briefing</span>
+            <span>Sentinel-1 SAR Oil Spill Technical Briefing</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Synthesized by multimodal remote-sensing evaluation engine (Gemini 3.8 Flash / Local Heuristic fallback).
+            Synthesized from deterministic SAR telemetry metrics using Gemini API with local heuristic fallback.
           </p>
         </div>
 
@@ -112,22 +110,22 @@ export const AiReportView: React.FC<AiReportViewProps> = ({ analysis }) => {
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
           <span className="text-[10px] uppercase text-slate-400 font-semibold block">Detection Confidence</span>
           <span className="text-sm font-bold font-mono text-cyan-400">
-            {Math.round(detection.confidence * 100)}% Verified
+            {Math.round(detection.confidence * 100)}% Confidence
           </span>
         </div>
 
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
-          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Candidate Anomaly</span>
+          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Candidate Footprint</span>
           <span className="text-sm font-bold font-mono text-white">
             {geometry.pixel_area.toLocaleString()} px
           </span>
         </div>
 
         <div className="rounded-lg border border-[#132742] bg-[#0a1526]/80 p-3">
-          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Intelligence Mode</span>
+          <span className="text-[10px] uppercase text-slate-400 font-semibold block">Synthesis Mode</span>
           <span className="text-sm font-bold text-emerald-400 flex items-center gap-1">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Gemini Grounded</span>
+            <span>AI / Rule-Based</span>
           </span>
         </div>
       </div>
@@ -142,7 +140,7 @@ export const AiReportView: React.FC<AiReportViewProps> = ({ analysis }) => {
         <div className="mt-8 pt-4 border-t border-[#132742] flex flex-col justify-between gap-2 text-[11px] text-slate-400 sm:flex-row sm:items-center">
           <div className="flex items-center gap-1.5 text-cyan-400">
             <Info className="h-4 w-4 shrink-0" />
-            <span>OILWATCH Satellite Oil Spill Intelligence Platform • Operational Assessment</span>
+            <span>Decision-Support Advisory • In-situ or multi-spectral verification recommended</span>
           </div>
           <span className="font-mono text-slate-400">OILWATCH SAR Pipeline v2.4</span>
         </div>

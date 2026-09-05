@@ -37,7 +37,7 @@ async function startServer() {
         "risk_engine",
         "ai_report_generator",
       ],
-      ai_provider: process.env.GEMINI_API_KEY ? "Gemini 3.8 Flash (Active)" : "Local Heuristic Fallback (Active)",
+      ai_provider: process.env.GEMINI_API_KEY ? "Gemini 2.5 Flash (Active)" : "Local Heuristic Fallback (Active)",
     });
   });
 
