@@ -4,6 +4,7 @@ import { Info, HelpCircle } from "lucide-react";
 interface TooltipProps {
   children?: ReactNode;
   content?: string | ReactNode;
+  text?: string | ReactNode;
   title?: string;
   className?: string;
   position?: "top" | "bottom" | "left" | "right";
@@ -12,12 +13,17 @@ interface TooltipProps {
 
 export const Tooltip: React.FC<TooltipProps> = ({
   children,
-  content = "Analytical Estimate based on SAR features (radar backscatter damping and pixel morphology) rather than an absolute environmental measurement.",
+  content,
+  text,
   title = "Analytical Estimate",
   className = "",
   position = "top",
   size = "md",
 }) => {
+  const resolvedContent =
+    text ||
+    content ||
+    "Analytical Estimate based on SAR features (radar backscatter damping and pixel morphology) rather than an absolute environmental measurement.";
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -115,7 +121,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             </span>
           </div>
           <div className="text-[11px] leading-relaxed text-slate-300">
-            {content}
+            {resolvedContent}
           </div>
           <div className="mt-2 pt-1 border-t border-slate-800/80 text-[10px] text-slate-400 font-mono flex items-center justify-between">
             <span>SAR Feature Extraction</span>

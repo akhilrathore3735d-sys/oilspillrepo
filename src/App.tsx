@@ -13,6 +13,8 @@ import { RiskAssessmentPanel } from "./components/RiskAssessmentPanel";
 import { ChangeDetectionPanel } from "./components/ChangeDetectionPanel";
 import { SpillMapViewer } from "./components/SpillMapViewer";
 import { AiReportView } from "./components/AiReportView";
+import { AisAnomalyPanel } from "./components/AisAnomalyPanel";
+import { HindcastEngineView } from "./components/HindcastEngineView";
 import { DemoModeModal } from "./components/DemoModeModal";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AnalysisResponse, DemoSample } from "./types";
@@ -125,6 +127,8 @@ export default function App() {
               onNavigateToAnalyze={() => setActiveTab("analyze")}
               onOpenDemo={() => setIsDemoModalOpen(true)}
               onViewResults={() => setActiveTab("results")}
+              onNavigateToAis={() => setActiveTab("ais")}
+              onNavigateToHindcast={() => setActiveTab("hindcast")}
             />
           )}
 
@@ -139,6 +143,12 @@ export default function App() {
               demoSamples={demoSamples}
             />
           )}
+
+          {/* Tab: AIS & Vessel Anomaly Correlation */}
+          {activeTab === "ais" && <AisAnomalyPanel />}
+
+          {/* Tab: Trajectory Hindcasting & Hydrodynamic Drift Engine */}
+          {activeTab === "hindcast" && <HindcastEngineView />}
 
           {/* Tab 3: Detailed Geometric Results */}
           {activeTab === "results" && (

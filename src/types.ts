@@ -135,3 +135,33 @@ export interface DemoSample {
   scenario: "medium_slick" | "weathered" | "clean_ocean";
   sensor: string;
 }
+
+export interface SatelliteDetectionPayload {
+  timestamp: string;
+  location: string;
+  vessel_type: string;
+  length: number;
+  heading: number;
+  speed_estimate: number;
+  confidence: number;
+}
+
+export interface AisCorrelationPayload {
+  matched_vessel: string;
+  ais_heading?: number | null;
+  ais_speed?: number | null;
+  last_ais_report?: string | null;
+  status: "ACTIVE" | "INACTIVE" | "MISSING" | string;
+}
+
+export interface VesselAnomalyResponse {
+  ais_consistent: boolean;
+  discrepancies: string[];
+  dark_ship_likelihood: string;
+  spoofing_likelihood: string;
+  anomalies_detected: string[];
+  risk_level: number;
+  reason: string;
+  recommended_actions: string[];
+}
+

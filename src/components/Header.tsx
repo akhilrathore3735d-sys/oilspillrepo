@@ -9,7 +9,9 @@ import {
   MapPin,
   Flame,
   FileText,
-  PlayCircle
+  PlayCircle,
+  Ship,
+  Waves,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -30,6 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: Activity },
     { id: "analyze", label: "Analyze SAR", icon: Radio },
+    { id: "ais", label: "AIS & Vessel Correlation", icon: Ship },
+    { id: "hindcast", label: "Hindcast & Drift", icon: Waves },
     { id: "results", label: "Analysis Results", icon: Layers, disabled: !hasResults },
     { id: "map", label: "Spill Map", icon: MapPin, disabled: !hasResults },
     { id: "weathering", label: "Ageing / Weathering", icon: Flame, disabled: !hasResults },

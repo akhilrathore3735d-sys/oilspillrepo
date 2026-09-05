@@ -9,6 +9,8 @@ import {
   generateSyntheticSarTile,
   callGeminiAiReport,
 } from "./server/pipeline.js";
+import { analyzeVesselAnomalyWithAi } from "./server/aisAnomaly.js";
+import hindcastRouter from "./server/routes/hindcast.js";
 
 dotenv.config();
 
@@ -159,6 +161,56 @@ async function startServer() {
       console.error("Change detection error:", err);
       res.status(500).json({ status: "error", error: err?.message || "Change detection computation failed" });
     }
+  });
+
+  // POST /api/ais-anomaly: Satellite detection vs AIS correlation anomaly analyzer
+  app.post("/api/ais-anomaly", async (req, res) => {
+    try {
+      const { satellite_detection, ais_correlation } = req.body;
+      if (!satellite_detection || !ais_correlation) {
+        return res.status(400).json({
+          status: "error",
+          error: "Missing satellite_detection or ais_correlation in request body.",
+        });
+      }
+
+      const result = await analyzeVesselAnomalyWithAi(satellite_detection, ais_correlation);
+      res.json(result);
+    } catch (err: any) {
+      console.error("AIS anomaly analysis error:", err);
+      res.status(500).json({
+        status: "error",
+        error: err?.message || "Failed to process AIS anomaly correlation analysis.",
+      });
+    }
+  });
+
+  // Trajectory Hindcasting & Hydrodynamic Drift Engine Endpoints
+  app.use("/api/hindcast", hindcastRouter);
+
+  app.post("/api/drift/forward", (req, res, next) => {
+    req.url = "/forward";
+    hindcastRouter(req, res, next);
+  });
+  app.post("/api/drift/backward", (req, res, next) => {
+    req.url = "/backward";
+    hindcastRouter(req, res, next);
+  });
+  app.get("/api/ais/historical", (req, res, next) => {
+    req.url = "/historical";
+    hindcastRouter(req, res, next);
+  });
+  app.get("/api/ais/history/:mmsi", (req, res, next) => {
+    req.url = `/history/${req.params.mmsi}`;
+    hindcastRouter(req, res, next);
+  });
+  app.get("/api/anomaly-threshold", (req, res, next) => {
+    req.url = "/anomaly-threshold";
+    hindcastRouter(req, res, next);
+  });
+  app.post("/api/anomaly-threshold", (req, res, next) => {
+    req.url = "/anomaly-threshold";
+    hindcastRouter(req, res, next);
   });
 
   // Vite middleware in development

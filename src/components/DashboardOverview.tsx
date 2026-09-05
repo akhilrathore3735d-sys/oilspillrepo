@@ -9,7 +9,9 @@ import {
   ArrowRight,
   Info,
   Cpu,
-  HelpCircle
+  HelpCircle,
+  Ship,
+  Waves,
 } from "lucide-react";
 import { AnalysisResponse } from "../types";
 import { Tooltip } from "./Tooltip";
@@ -19,6 +21,8 @@ interface DashboardOverviewProps {
   onNavigateToAnalyze: () => void;
   onOpenDemo: () => void;
   onViewResults: () => void;
+  onNavigateToAis?: () => void;
+  onNavigateToHindcast?: () => void;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
@@ -26,6 +30,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onNavigateToAnalyze,
   onOpenDemo,
   onViewResults,
+  onNavigateToAis,
+  onNavigateToHindcast,
 }) => {
   // Benchmark and evaluation scenarios for demonstration and verification
   const benchmarkRecords = [
@@ -253,6 +259,53 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
         </div>
       )}
+
+      {/* AIS & Vessel Correlation Integration Banner */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-xl border border-cyan-800/50 bg-gradient-to-r from-cyan-950/40 via-[#0a1526] to-[#071324] p-5 shadow-lg">
+        <div className="flex items-start gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-500/40 bg-cyan-950/80 text-cyan-400">
+            <Ship className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-white tracking-wide">
+                Satellite Vessel Detection & AIS Correlation Engine
+              </h3>
+              <span className="rounded border border-cyan-500/40 bg-cyan-950 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
+                NEW • SOLAS COMPLIANCE
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+              Cross-validate radar detections against live AIS transponder broadcasts. Automatically calculate dark-ship likelihoods, detect kinematic speed/course spoofing, and assess maritime regulatory compliance.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {onNavigateToAis && (
+            <button
+              id="launch-ais-anomaly-btn"
+              onClick={onNavigateToAis}
+              className="flex items-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-950/60 px-3.5 py-2.5 text-xs font-bold text-cyan-200 transition hover:bg-cyan-900/60"
+            >
+              <Ship className="h-4 w-4" />
+              <span>AIS Correlation</span>
+            </button>
+          )}
+
+          {onNavigateToHindcast && (
+            <button
+              id="launch-hindcast-btn"
+              onClick={onNavigateToHindcast}
+              className="flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-cyan-500"
+            >
+              <Waves className="h-4 w-4" />
+              <span>Hindcast & Drift Engine</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* System Pipeline Architecture Infographic */}
       <div className="rounded-xl border border-[#132742] bg-[#0a1526]/80 p-5">

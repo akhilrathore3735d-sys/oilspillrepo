@@ -1,4 +1,20 @@
-import { AnalysisResponse, ChangeDetectionResponse, DemoSample } from "../types";
+import {
+  AnalysisResponse,
+  ChangeDetectionResponse,
+  DemoSample,
+  SatelliteDetectionPayload,
+  AisCorrelationPayload,
+  VesselAnomalyResponse,
+} from "../types";
+import {
+  HindcastResult,
+  DriftTrajectory,
+  AISRecord,
+} from "../types/hindcast";
+import {
+  AnomalyThresholdConfig,
+  AnomalyStrictness,
+} from "../types/anomalyThreshold";
 
 const API_BASE = "/api";
 const DEFAULT_TIMEOUT_MS = 25000;
@@ -260,3 +276,184 @@ function generateClientSyntheticSarBase64(scenario: string): string {
 
   return canvas.toDataURL("image/png");
 }
+
+/**
+ * Correlate satellite vessel detection with AIS records to identify anomalies and dark ships
+ */
+export async function analyzeVesselAnomaly(
+  satellite_detection: SatelliteDetectionPayload,
+  ais_correlation: AisCorrelationPayload
+): Promise<VesselAnomalyResponse> {
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE}/ais-anomaly`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          satellite_detection,
+          ais_correlation,
+        }),
+      },
+      25000
+    );
+
+    return await parseResponseOrThrow(res, "AIS Anomaly Correlation Analysis failed");
+  } catch (err: any) {
+    console.error("AIS Anomaly API Error:", err);
+    throw new Error(err?.message || "Failed to execute AIS correlation anomaly analysis.");
+  }
+}
+
+/**
+ * Execute vessel trajectory hindcasting with hydrodynamic drift correlation
+ */
+export async function hindcastVesselApi(params: {
+  mmsi: string;
+  lookbackDays?: number;
+  includeDriftAnalysis?: boolean;
+  anomalyStrictness?: AnomalyStrictness | string;
+  environmentalData?: any;
+  referenceDetectionLocation?: [number, number];
+}): Promise<HindcastResult> {
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE}/hindcast/vessel`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      },
+      30000
+    );
+    return await parseResponseOrThrow(res, "Vessel trajectory hindcasting failed");
+  } catch (err: any) {
+    console.error("Hindcast API Error:", err);
+    throw new Error(err?.message || "Failed to calculate vessel trajectory hindcasting.");
+  }
+}
+
+/**
+ * Retrieve cached or benchmark hindcast report
+ */
+export async function fetchHindcastHistoryApi(detectionId: string): Promise<HindcastResult> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/hindcast/history/${encodeURIComponent(detectionId)}`);
+    return await parseResponseOrThrow(res, "Failed to load hindcast report");
+  } catch (err: any) {
+    console.error("Fetch Hindcast History Error:", err);
+    throw new Error(err?.message || "Failed to load historical hindcast.");
+  }
+}
+
+/**
+ * Forward oil spill hydrodynamic transport simulation
+ */
+export async function fetchDriftForwardApi(params: {
+  origin: { lat: number; lon: number; timestamp?: string };
+  hoursAhead?: number;
+  currentVector?: { u: number; v: number };
+  windVector?: { speed: number; direction: number };
+}): Promise<DriftTrajectory> {
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE}/drift/forward`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      },
+      25000
+    );
+    return await parseResponseOrThrow(res, "Forward drift solver failed");
+  } catch (err: any) {
+    console.error("Forward Drift API Error:", err);
+    throw new Error(err?.message || "Failed to solve forward oil transport simulation.");
+  }
+}
+
+/**
+ * Backward ray tracing to discharge point of origin
+ */
+export async function fetchDriftBackwardApi(params: {
+  detection: { lat: number; lon: number; timestamp?: string };
+  hoursBack?: number;
+  currentVector?: { u: number; v: number };
+  windVector?: { speed: number; direction: number };
+}): Promise<{ trajectory: DriftTrajectory; backwardPoints: any[] }> {
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE}/drift/backward`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      },
+      25000
+    );
+    return await parseResponseOrThrow(res, "Backward drift solver failed");
+  } catch (err: any) {
+    console.error("Backward Drift API Error:", err);
+    throw new Error(err?.message || "Failed to solve backward oil origin ray tracing.");
+  }
+}
+
+/**
+ * Query multi-provider AIS telemetry
+ */
+export async function fetchAisHistoryApi(mmsi: string, days: number = 7): Promise<{
+  provider: string;
+  mmsi: string;
+  recordCount: number;
+  records: AISRecord[];
+  dataQuality: number;
+}> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/ais/historical?mmsi=${encodeURIComponent(mmsi)}&days=${days}`);
+    return await parseResponseOrThrow(res, "Failed to retrieve AIS history");
+  } catch (err: any) {
+    console.error("AIS Historical API Error:", err);
+    throw new Error(err?.message || "Failed to retrieve AIS historical telemetry.");
+  }
+}
+
+/**
+ * Fetch active anomaly threshold configuration
+ */
+export async function fetchAnomalyThresholdApi(): Promise<AnomalyThresholdConfig> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/anomaly-threshold`);
+    return await parseResponseOrThrow(res, "Failed to fetch anomaly threshold configuration");
+  } catch (err: any) {
+    console.error("Anomaly Threshold API Error:", err);
+    throw new Error(err?.message || "Failed to load anomaly threshold settings.");
+  }
+}
+
+/**
+ * Update anomaly threshold sensitivity or custom parameters
+ */
+export async function updateAnomalyThresholdApi(
+  strictness: AnomalyStrictness | string,
+  customOverrides?: Partial<AnomalyThresholdConfig>
+): Promise<{ status: string; config: AnomalyThresholdConfig }> {
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE}/anomaly-threshold`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strictness, customOverrides }),
+      },
+      15000
+    );
+    return await parseResponseOrThrow(res, "Failed to update anomaly threshold configuration");
+  } catch (err: any) {
+    console.error("Update Anomaly Threshold API Error:", err);
+    throw new Error(err?.message || "Failed to update anomaly thresholds.");
+  }
+}
+
+
