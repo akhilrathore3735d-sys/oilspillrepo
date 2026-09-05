@@ -145,6 +145,6 @@ In compliance with strict remote-sensing scientific standards:
 ---
 
 ## 👥 Authors & Acknowledgments
-Developed for **Smart India Hackathon 2024** | **Problem Statement 143**.
-- Space Application Centre (ISRO) & Copernicus Sentinel Data Access.
+Developed for **Smart India Hackathon 2026** | **Problem Statement 143**.
+- Copernicus Sentinel Data Access.
 - Built with React, TypeScript, Tailwind CSS, Express, OpenCV, and Gemini AI.
